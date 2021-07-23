@@ -1,0 +1,15 @@
+---
+applications:
+  - name: http1
+    env:
+      GOVERSION: go1.16
+      PROTO: http1
+    buildpacks:
+      - go_buildpack
+  - name: h2c
+    env:
+      GOVERSION: go1.16
+      PROTO: h2c
+    buildpacks:
+      - go_buildpack
+
