@@ -54,6 +54,7 @@ func generateImages(quantity int) string {
 func serveHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	loadTimeScript := template.JS(`
+document.getElementById("http").innerHTML = performance.getEntries()[0]?.nextHopProtocol;
 window.addEventListener("load", function() {
 	window.setTimeout(function() {
 		document.getElementById("time").innerHTML = (window.performance.timing.loadEventEnd - window.performance.timing.navigationStart);
@@ -69,7 +70,8 @@ window.addEventListener("load", function() {
 <title>HTTP/2 Image Tile Demo</title>
 <body>
 <h1>HTTP/2 Image Tile Demo</h1>
-<div>HTTP Version: {{.HttpVersion}}</div>
+<div>App HTTP Version: {{.HttpVersion}}</div>
+<div>Browser HTTP Version: <span id="http"></span></div>
 <div>Load Time: <span id="time"></span></div>
 {{.Images}}
 <script>
