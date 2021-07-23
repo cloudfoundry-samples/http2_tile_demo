@@ -8,6 +8,6 @@ HTTP/1.
 1. `./gen_keys.sh` to generate cert/key for the HTTPS + HTTP/2 server. Requires
    `openssl`. Set the subject name to `localhost`.
 2. `go build`
-3. `./http2_tile_demo` to run
-4. Visit `https://localhost:8080` for HTTP/2
-5. Visit `http://localhost:8081` for HTTP/1
+3. `PORT=8080 PROTO=h2 ./http2_tile_demo` to serve HTTP/2 over TLS
+3. `PORT=8080 PROTO=h2c ./http2_tile_demo` to serve HTTP/2 without TLS
+3. `PORT=8080 PROTO=http1 ./http2_tile_demo` to serve HTTP/1.1 without TLS

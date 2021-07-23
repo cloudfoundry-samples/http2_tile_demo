@@ -10,6 +10,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 func handleErr(message string, err error) {
@@ -79,20 +82,25 @@ window.addEventListener("load", function() {
 	handleErr("Writing HTML", err)
 }
 
-func serveHttp2(doneChan chan string) {
-	http2Server := &http.Server{Addr: ":8080"}
-	fmt.Println("Listening on https://localhost:8080")
+func serveHttp2(address string) {
+	http2Server := &http.Server{Addr: address}
+	fmt.Printf("Listening on https://%s", address)
 	err := http2Server.ListenAndServeTLS("server.crt", "server.key")
-	handleErr("Serving HTTP2", err)
-	doneChan <- "Done HTTP/2"
+	handleErr("Serving H2", err)
 }
 
-func serveHttp1(doneChan chan string) {
-	http2Server := &http.Server{Addr: ":8081"}
-	fmt.Println("Listening on http://localhost:8081")
+func serveH2c(address string) {
+	http2Server := &http.Server{Addr: address, Handler: h2c.NewHandler(http.DefaultServeMux, &http2.Server{})}
+	fmt.Printf("Listening on http://%s", address)
+	err := http2Server.ListenAndServe()
+	handleErr("Serving H2C", err)
+}
+
+func serveHttp1(address string) {
+	http2Server := &http.Server{Addr: address}
+	fmt.Printf("Listening on http://%s", address)
 	err := http2Server.ListenAndServe()
 	handleErr("Serving HTTP1", err)
-	doneChan <- "Done HTTP/1"
 }
 
 func main() {
@@ -100,10 +108,19 @@ func main() {
 	serveImg := serveImgFactory()
 	http.HandleFunc("/images/", serveImg)
 
-	doneChan := make(chan string)
+	proto := strings.ToLower(os.Getenv("PROTO"))
+	port := os.Getenv("PORT")
 
-	go serveHttp1(doneChan)
-	go serveHttp2(doneChan)
+	address := fmt.Sprintf("0.0.0.0:%s", port)
 
-	fmt.Println(<-doneChan)
+	switch proto {
+	case "h2":
+		serveHttp2(address)
+	case "h2c":
+		serveH2c(address)
+	case "http1":
+		serveHttp1(address)
+	default:
+		fmt.Println("No protocol set. Specify PROTO environment variable. Valid values: 'h2', 'h2c', 'http1'.")
+	}
 }
