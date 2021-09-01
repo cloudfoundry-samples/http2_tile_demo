@@ -13,7 +13,7 @@ HTTP/1.
 1. `PORT=8080 PROTO=http1 ./http2_tile_demo` to serve HTTP/1.1 without TLS
 
 ## Running On Cloud Foundry:
-1. `cf push` with the provided `manifest.yml`. This will deploy a HTTP/1 and
-   HTTP/2 version of the demo.
-1. Enable end-to-end HTTP/2 routing for the HTTP/2 demo. This is currently being
-   implemented for Cloud Foundry, so check CF docs for detailed steps.
+1. `cf push -f manifest.yml --var domain=<your domain here>`. This will deploy a HTTP/1 and
+   HTTP/2 (H2C) version of the demo.
+1. Visit `https://h2c.<your domain here>` for the HTTP/2 version
+1. Visit `http://http1.<your domain here>` for the HTTP/1 version

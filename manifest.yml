@@ -1,12 +1,18 @@
 ---
 applications:
   - name: http1
+    routes:
+      - route: http1.((domain))
+        protocol: http1
     env:
       GOVERSION: go1.16
       PROTO: http1
     buildpacks:
       - go_buildpack
   - name: h2c
+    routes:
+      - route: h2c.((domain))
+        protocol: http2
     env:
       GOVERSION: go1.16
       PROTO: h2c
