@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -22,16 +23,16 @@ func handleErr(message string, err error) {
 	}
 }
 
+var (
+	//go:embed assets/cf_logo.png
+	imgContents []byte
+)
+
 func serveImgFactory() func(http.ResponseWriter, *http.Request) {
-	img, err := os.Open("cf_logo.png")
-	handleErr("Opening image", err)
-	defer img.Close()
-	imgContents, err := io.ReadAll(img)
-	handleErr("Copy image", err)
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/jpeg")
 		w.Header().Set("X-Http-Version", r.Proto)
-		_, err = io.Copy(w, bytes.NewBuffer(imgContents))
+		_, err := io.Copy(w, bytes.NewBuffer(imgContents))
 		handleErr("Writing image", err)
 	}
 }
@@ -40,7 +41,7 @@ type TemplateArgs map[string]interface{}
 
 func generateImage() string {
 	fingerprint := rand.Int63n(math.MaxInt64)
-	return fmt.Sprintf(`<img src="/images/test_%d.png" height="20" />`, fingerprint)
+	return fmt.Sprintf( /* language=html */ `<img src="/images/test_%[1]d.png" alt="Test Image %[1]d" height="20" />`, fingerprint)
 }
 
 func generateImages(quantity int) string {
@@ -51,36 +52,22 @@ func generateImages(quantity int) string {
 	return sb.String()
 }
 
+var (
+	//go:embed assets/load_time.js
+	loadTimeScript string
+
+	//go:embed assets/index.gohtml
+	indexHTML string
+)
+
 func serveHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	loadTimeScript := template.JS(`
-document.getElementById("http").innerHTML = performance.getEntries()[0]?.nextHopProtocol;
-window.addEventListener("load", function() {
-	window.setTimeout(function() {
-		document.getElementById("time").innerHTML = (window.performance.timing.loadEventEnd - window.performance.timing.navigationStart);
-	}, 0);
-});`)
 	templateArgs := TemplateArgs{
 		"HttpVersion": r.Proto,
 		"Images":      template.HTML(generateImages(1000)),
 		"Script":      loadTimeScript,
 	}
-	templateString := `<!DOCTYPE html>
-<html>
-<title>HTTP/2 Image Tile Demo</title>
-<body>
-<h1>HTTP/2 Image Tile Demo</h1>
-<div>App HTTP Version: {{.HttpVersion}}</div>
-<div>Browser HTTP Version: <span id="http"></span></div>
-<div>Load Time: <span id="time"></span></div>
-{{.Images}}
-<script>
-{{.Script}}
-</script>
-</body>
-</html>`
-	renderableTemplate := template.Must(template.New("").Parse(templateString))
-	err := renderableTemplate.Execute(w, templateArgs)
+	err := template.Must(template.New("").Parse(indexHTML)).Execute(w, templateArgs)
 	handleErr("Writing HTML", err)
 }
 

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HTTP/2 Image Tile Demo</title>
+</head>
+<body>
+    <h1>HTTP/2 Image Tile Demo</h1>
+    <div>App HTTP Version: {{.HttpVersion}}</div>
+    <div>Browser HTTP Version: <span id="http"></span></div>
+    <div>Load Time: <span id="time"></span></div>
+    {{.Images}}
+    <script>
+        {{.Script}}
+    </script>
+</body>
+</html>
