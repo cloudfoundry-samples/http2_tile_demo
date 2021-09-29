@@ -37,7 +37,11 @@ func serveImgFactory() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-type TemplateArgs map[string]interface{}
+type TemplateArgs struct {
+	HttpVersion string
+	Images      template.HTML
+	Script      template.JS
+}
 
 func generateImage() string {
 	fingerprint := rand.Int63n(math.MaxInt64)
@@ -63,9 +67,9 @@ var (
 func serveHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	templateArgs := TemplateArgs{
-		"HttpVersion": r.Proto,
-		"Images":      template.HTML(generateImages(1000)),
-		"Script":      loadTimeScript,
+		HttpVersion: r.Proto,
+		Images:      template.HTML(generateImages(1000)),
+		Script:      template.JS(loadTimeScript),
 	}
 	err := template.Must(template.New("").Parse(indexHTML)).Execute(w, templateArgs)
 	handleErr("Writing HTML", err)
