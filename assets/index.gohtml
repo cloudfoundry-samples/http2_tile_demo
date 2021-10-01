@@ -9,7 +9,9 @@
     <div>App HTTP Version: {{.HttpVersion}}</div>
     <div>Browser HTTP Version: <span id="http"></span></div>
     <div>Load Time: <span id="time"></span></div>
-    {{.Images}}
+    {{range .ImageFingerprints}}
+        <img src="/images/test_{{.}}.png" alt="Test Image {{.}}" height="20" />
+    {{end}}
     <script>
         {{.Script}}
     </script>
