@@ -113,8 +113,8 @@ func getURLs(r io.Reader, max int) []string {
 	if err != nil {
 		panic("failed to parse html")
 	}
-	var recurse func(node *html.Node)
-	recurse = func(node *html.Node) {
+	var visit func(node *html.Node)
+	visit = func(node *html.Node) {
 		if node == nil || len(paths) >= max {
 			return
 		}
@@ -125,11 +125,17 @@ func getURLs(r io.Reader, max int) []string {
 					paths = append(paths, attr.Val)
 				}
 			}
-			recurse(node.FirstChild)
-			recurse(node.NextSibling)
+			for n := node.FirstChild; n != nil; n = n.NextSibling {
+				visit(n)
+			}
+			visit(node.NextSibling)
+		case html.DoctypeNode:
+			visit(node.NextSibling)
+		case html.DocumentNode:
+			visit(node.FirstChild)
 		}
 	}
-	recurse(root)
+	visit(root)
 	return paths
 }
 
